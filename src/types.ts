@@ -1,7 +1,7 @@
 import AuthenticationContext from 'adal-angular';
 
 export interface IAuthService {
-  config: AuthenticationContext.Options | MsalConfig;
+  config: AuthenticationContext.Options | MsalOptions;
   getToken(resource: Resource): Promise<string>;
   login(): Promise<AuthenticationContext.UserInfo>;
   logout(): void;
@@ -13,7 +13,7 @@ export enum Resource {
   graph = 'https://graph.microsoft.com/',
 }
 
-interface MsalConfig {
+export interface MsalOptions {
   auth: {
     clientId: string;
     redirectUri: string;
