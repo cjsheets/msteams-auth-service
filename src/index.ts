@@ -1,54 +1,40 @@
-import AuthenticationContext from 'adal-angular';
-
-import { insideIframe } from './utility';
+import insideIframe from './utility';
 import AdalAuthService from './adal-auth-service';
 import MockAuthService from './mock-auth-service';
 import MsalAuthService from './msal-auth-service';
 import TeamsAuthService from './teams-auth-service';
 import TeamsSsoAuthService from './teams-sso-auth-service';
-
-export interface IAuthService {
-  config: AuthenticationContext.Options | MsalAuthService['config'];
-  getToken(resource: Resource): Promise<string>;
-  login(): Promise<AuthenticationContext.UserInfo>;
-  logout(): void;
-  getUser(): Promise<AuthenticationContext.UserInfo>;
-  isCallback(location: string): boolean;
-}
-
-export enum Resource {
-  graph = 'https://graph.microsoft.com/',
-}
+import { IAuthService, Resource } from './types';
 
 class AuthService implements IAuthService {
-  private _authService: IAuthService;
+  private authService: IAuthService;
 
   constructor() {
     this.initAuthService();
   }
 
   get config() {
-    return this._authService.config;
+    return this.authService.config;
   }
 
   isCallback() {
-    return this._authService.isCallback(window.location.hash);
+    return this.authService.isCallback(window.location.hash);
   }
 
   login() {
-    return this._authService.login();
+    return this.authService.login();
   }
 
   logout() {
-    this._authService.logout();
+    this.authService.logout();
   }
 
   getToken(resource: Resource) {
-    return this._authService.getToken(resource);
+    return this.authService.getToken(resource);
   }
 
   getUser() {
-    return this._authService.getUser();
+    return this.authService.getUser();
   }
 
   private initAuthService() {
@@ -56,19 +42,19 @@ class AuthService implements IAuthService {
     const params = new URLSearchParams(url.search);
 
     if (params.get('mockData')) {
-      this._authService = new MockAuthService();
+      this.authService = new MockAuthService();
     } else if (params.get('isTeamsFrame') || insideIframe()) {
       // Teams doesn't allow query parameters for Team scope URIs
-      this._authService = new TeamsAuthService();
+      this.authService = new TeamsAuthService();
     } else if (params.get('isTeamsFrameSSO')) {
-      this._authService = new TeamsSsoAuthService();
+      this.authService = new TeamsSsoAuthService();
     } else if (
       params.get('useV2') ||
       url.pathname.indexOf(`/${process.env.ADAL_REDIRECT_PATH}`) !== -1
     ) {
-      this._authService = new MsalAuthService();
+      this.authService = new MsalAuthService();
     } else {
-      this._authService = new AdalAuthService();
+      this.authService = new AdalAuthService();
     }
   }
 }

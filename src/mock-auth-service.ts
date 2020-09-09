@@ -1,7 +1,8 @@
-import { IAuthService } from '.';
 import AuthenticationContext from 'adal-angular';
+import { IAuthService } from './types';
 
 export default class MockAuthService implements IAuthService {
+  // eslint-disable-next-line class-methods-use-this
   get config() {
     return {} as any;
   }
@@ -32,17 +33,15 @@ export default class MockAuthService implements IAuthService {
     const mockUser = localStorage.getItem('mock.user');
     if (mockUser) {
       return Promise.resolve(JSON.parse(mockUser));
-    } else {
-      return Promise.reject('User information is not available');
     }
+    return Promise.reject(new Error('User information is not available'));
   };
 
   getToken = () => {
     const mockUser = localStorage.getItem('mock.user');
     if (mockUser) {
       return Promise.resolve('mock.token');
-    } else {
-      return Promise.reject('User information is not available');
     }
+    return Promise.reject(new Error('User information is not available'));
   };
 }

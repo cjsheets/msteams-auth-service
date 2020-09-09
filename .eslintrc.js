@@ -2,7 +2,9 @@ module.exports = {
   root: true,
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    ecmaFeatures: { jsx: true },
+    ecmaVersion: 2018,
+    sourceType: 'module',
+    project: './tsconfig.json',
   },
   env: {
     browser: true,
@@ -11,32 +13,18 @@ module.exports = {
   extends: [
     'eslint:recommended',
     'airbnb',
-    'plugin:react/recommended',
+    'airbnb-typescript',
+    'plugin:@typescript-eslint/eslint-recommended',
+    'prettier',
     'prettier/@typescript-eslint',
     'plugin:prettier/recommended',
   ],
-  plugins: ['prettier'],
+  plugins: ['@typescript-eslint', 'prettier'],
   rules: {
     'prettier/prettier': ['error', {}, { usePrettierrc: true }],
-    'react/prop-types': 'off',
-    'react/react-in-jsx-scope': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/ban-ts-ignore': 'off',
-    'jsx-a11y/label-has-associated-control': [
-      'error',
-      {
-        labelComponents: [],
-        labelAttributes: [],
-        controlComponents: [],
-        assert: 'either',
-        depth: 25,
-      },
-    ],
     '@typescript-eslint/no-explicit-any': 'off',
-  },
-  settings: {
-    react: {
-      version: 'detect',
-    },
+    'prefer-promise-reject-errors': 'off',
   },
 };

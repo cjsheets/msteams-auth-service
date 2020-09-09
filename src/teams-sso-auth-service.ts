@@ -1,41 +1,42 @@
 import * as microsoftTeams from '@microsoft/teams-js';
 import AuthenticationContext from 'adal-angular';
 
-import { IAuthService, Resource } from '.';
+import { IAuthService, Resource } from './types';
 import TeamsAuthService from './teams-auth-service';
 
 /*
  * Use Teams.js library to request tokens for logged in user
  */
 class TeamsSsoAuthService implements IAuthService {
-  private _token: string;
-  private _authService: TeamsAuthService;
+  private token: string;
+
+  private authService: TeamsAuthService;
 
   constructor() {
     microsoftTeams.initialize();
 
-    this._token = null;
+    this.token = null;
   }
 
   login() {
-    if (!this._authService) {
-      this._authService = new TeamsAuthService();
+    if (!this.authService) {
+      this.authService = new TeamsAuthService();
     }
-    return this._authService.login();
+    return this.authService.login();
   }
 
   logout() {
-    this._authService.logout();
+    this.authService.logout();
   }
 
   isCallback() {
-    if (!this._authService) {
-      this._authService = new TeamsAuthService();
+    if (!this.authService) {
+      this.authService = new TeamsAuthService();
     }
-    return this._authService.isCallback();
+    return this.authService.isCallback();
   }
 
-  parseTokenToUser(token: string): AuthenticationContext.UserInfo {
+  static parseTokenToUser(token: string): AuthenticationContext.UserInfo {
     // parse JWT token to object
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -54,12 +55,12 @@ class TeamsSsoAuthService implements IAuthService {
 
   getUser() {
     return new Promise<AuthenticationContext.UserInfo>((resolve, reject) => {
-      if (this._token) {
-        resolve(this.parseTokenToUser(this._token));
+      if (this.token) {
+        resolve(TeamsSsoAuthService.parseTokenToUser(this.token));
       } else {
         this.getToken(Resource.graph)
           .then((token) => {
-            resolve(this.parseTokenToUser(token));
+            resolve(TeamsSsoAuthService.parseTokenToUser(token));
           })
           .catch((reason) => {
             reject(reason);
@@ -70,13 +71,13 @@ class TeamsSsoAuthService implements IAuthService {
 
   getToken(resource: Resource) {
     return new Promise<string>((resolve, reject) => {
-      if (this._token) {
-        resolve(this._token);
+      if (this.token) {
+        resolve(this.token);
       } else {
         microsoftTeams.authentication.getAuthToken({
           resources: [resource],
           successCallback: (result) => {
-            this._token = result;
+            this.token = result;
             resolve(result);
           },
           failureCallback: (reason) => {
@@ -88,7 +89,7 @@ class TeamsSsoAuthService implements IAuthService {
   }
 
   get config() {
-    return this._authService.config;
+    return this.authService.config;
   }
 }
 

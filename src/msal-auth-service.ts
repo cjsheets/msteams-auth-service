@@ -1,6 +1,6 @@
 import * as MSAL from '@azure/msal';
 
-import { IAuthService, Resource } from '.';
+import { IAuthService, Resource } from './types';
 
 /*
  * Use MSAL.js to authenticate AAD or MSA accounts against AAD v2
@@ -48,12 +48,12 @@ class MsalAuthService implements IAuthService {
           .acquireTokenPopup({ scopes })
           .then((res) => res.accessToken)
           .catch((error) => {
-            console.error(error);
             throw error;
           });
       });
   }
 
+  // eslint-disable-next-line class-methods-use-this
   get config() {
     return {
       auth: {

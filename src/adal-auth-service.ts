@@ -1,22 +1,25 @@
 import AuthenticationContext from 'adal-angular';
 
-import { IAuthService, Resource } from '.';
+import { IAuthService, Resource } from './types';
 
 /*
  * Use ADAL.js to authenticate against AAD v1
  */
 class AdalAuthService implements IAuthService {
-  private _authParams: URLSearchParams;
-  private _authContext: AuthenticationContext;
+  private authParams: URLSearchParams;
+
+  private authContext: AuthenticationContext;
 
   private loginPromise: Promise<AuthenticationContext.UserInfo>;
+
   private loginPromiseResolve: (value?: AuthenticationContext.UserInfo) => void;
+
   private loginPromiseReject: (err: Error) => void;
 
   constructor() {
     const url = new URL(window.location.href);
-    this._authParams = new URLSearchParams(url.search);
-    this._authContext = new AuthenticationContext(this.config);
+    this.authParams = new URLSearchParams(url.search);
+    this.authContext = new AuthenticationContext(this.config);
   }
 
   login() {
@@ -25,18 +28,18 @@ class AdalAuthService implements IAuthService {
         this.loginPromiseResolve = resolve;
         this.loginPromiseReject = reject;
         // Start the login flow
-        this._authContext.login();
+        this.authContext.login();
       });
     }
     return this.loginPromise;
   }
 
   logout() {
-    this._authContext.logOut();
+    this.authContext.logOut();
   }
 
   isCallback() {
-    return this._authContext.isCallback(window.location.hash);
+    return this.authContext.isCallback(window.location.hash);
   }
 
   loginCallback = (reason: any, token: any, error: any) => {
@@ -44,8 +47,8 @@ class AdalAuthService implements IAuthService {
       if (!error) {
         this.getUser()
           .then((user) => this.loginPromiseResolve(user))
-          .catch((error) => {
-            this.loginPromiseReject(error);
+          .catch((err) => {
+            this.loginPromiseReject(err);
             this.loginPromise = undefined;
           });
       } else {
@@ -57,7 +60,7 @@ class AdalAuthService implements IAuthService {
 
   getUser() {
     return new Promise<AuthenticationContext.UserInfo>((resolve, reject) => {
-      this._authContext.getUser((error, user) => {
+      this.authContext.getUser((error, user) => {
         if (!error) {
           resolve(user);
         } else {
@@ -69,18 +72,16 @@ class AdalAuthService implements IAuthService {
 
   getToken = () => {
     return new Promise<string>((resolve, reject) => {
-      this._authContext.acquireToken(this.config.endpoints.graph, (reason, token, error) => {
+      this.authContext.acquireToken(this.config.endpoints.graph, (reason, token, error) => {
         if (!error) {
           resolve(token);
+        } else if (error === 'login required') {
+          this.login()
+            .then(this.getToken)
+            .then((_token) => resolve(_token))
+            .catch(({ _error, _reason }) => reject({ error: _error, reason: _reason }));
         } else {
-          if (error === 'login required') {
-            this.login()
-              .then(this.getToken)
-              .then((token) => resolve(token))
-              .catch(({ error, reason }) => reject({ error, reason }));
-          } else {
-            reject({ error, reason });
-          }
+          reject({ error, reason });
         }
       });
     });
@@ -102,7 +103,7 @@ class AdalAuthService implements IAuthService {
       popUp: !(window.navigator as any).standalone,
       postLogoutRedirectUri: `${window.location.origin}/${process.env.ADAL_REDIRECT_PATH}`,
       redirectUri: `${window.location.origin}/${process.env.ADAL_REDIRECT_PATH}`,
-      tenant: this._authParams.get('tenantId') || 'common',
+      tenant: this.authParams.get('tenantId') || 'common',
     };
   }
 }

@@ -1,23 +1,24 @@
 import * as microsoftTeams from '@microsoft/teams-js';
 import AuthenticationContext from 'adal-angular';
 
-import { IAuthService, Resource } from '.';
+import { IAuthService, Resource } from './types';
 
 /*
  * Use ADAL.js and Teams.js library to authenticate against AAD v1
  */
 class TeamsAuthService implements IAuthService {
-  private _authParams: URLSearchParams;
-  private _authContext: AuthenticationContext;
+  private authParams: URLSearchParams;
+
+  private authContext: AuthenticationContext;
 
   private loginPromise: Promise<AuthenticationContext.UserInfo>;
 
   constructor() {
     microsoftTeams.initialize();
-    microsoftTeams.getContext(function (context) {});
+    microsoftTeams.getContext(function getContext() {});
     const url = new URL(window.location.href);
-    this._authParams = new URLSearchParams(url.search);
-    this._authContext = new AuthenticationContext(this.config);
+    this.authParams = new URLSearchParams(url.search);
+    this.authContext = new AuthenticationContext(this.config);
   }
 
   login() {
@@ -43,16 +44,16 @@ class TeamsAuthService implements IAuthService {
   }
 
   logout() {
-    this._authContext.logOut();
+    this.authContext.logOut();
   }
 
   isCallback() {
-    return this._authContext.isCallback(window.location.hash);
+    return this.authContext.isCallback(window.location.hash);
   }
 
   getUser() {
     return new Promise<AuthenticationContext.UserInfo>((resolve, reject) => {
-      this._authContext.getUser((error, user) => {
+      this.authContext.getUser((error, user) => {
         if (!error) {
           resolve(user);
         } else {
@@ -65,7 +66,7 @@ class TeamsAuthService implements IAuthService {
   getToken(resource: Resource) {
     return new Promise<string>((resolve, reject) => {
       this.ensureLoginHint().then(() => {
-        this._authContext.acquireToken(resource, (reason, token, error) => {
+        this.authContext.acquireToken(resource, (reason, token, error) => {
           if (!error) {
             resolve(token);
           } else {
@@ -77,7 +78,7 @@ class TeamsAuthService implements IAuthService {
   }
 
   ensureLoginHint() {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       microsoftTeams.getContext((context) => {
         const scopes = encodeURIComponent(
           'email profile User.ReadBasic.All, User.Read.All, Group.Read.All, Directory.Read.All'
@@ -87,11 +88,11 @@ class TeamsAuthService implements IAuthService {
         // - openid and profile scope adds profile information to the id_token
         // - login_hint provides the expected user name
         if (context.loginHint) {
-          this._authContext.config.extraQueryParameter = `prompt=consent&scope=${scopes}&login_hint=${encodeURIComponent(
+          this.authContext.config.extraQueryParameter = `prompt=consent&scope=${scopes}&login_hint=${encodeURIComponent(
             context.loginHint
           )}`;
         } else {
-          this._authContext.config.extraQueryParameter = `prompt=consent&scope=${scopes}`;
+          this.authContext.config.extraQueryParameter = `prompt=consent&scope=${scopes}`;
         }
         resolve();
       });
@@ -108,7 +109,7 @@ class TeamsAuthService implements IAuthService {
       navigateToLoginRequestUrl: false,
       postLogoutRedirectUri: `${window.location.origin}/${process.env.ADAL_REDIRECT_PATH}`,
       redirectUri: `${window.location.origin}/${process.env.ADAL_REDIRECT_PATH}`,
-      tenant: this._authParams.get('tenantId') || 'common',
+      tenant: this.authParams.get('tenantId') || 'common',
     };
   }
 }

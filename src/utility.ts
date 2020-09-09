@@ -1,4 +1,4 @@
-export function insideIframe() {
+export default function insideIframe() {
   try {
     return window.self !== window.top;
   } catch (e) {
