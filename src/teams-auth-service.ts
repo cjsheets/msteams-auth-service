@@ -1,6 +1,5 @@
 import * as microsoftTeams from '@microsoft/teams-js';
 import AuthenticationContext from 'adal-angular';
-
 import { IAuthService, Resource } from './types';
 
 /*

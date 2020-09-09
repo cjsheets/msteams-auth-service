@@ -1,5 +1,4 @@
 import * as MSAL from '@azure/msal';
-
 import { IAuthService, Resource } from './types';
 
 /*
