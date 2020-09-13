@@ -1,4 +1,4 @@
-import insideIframe from './utility';
+import { insideIframe } from './utility';
 import AdalAuthService from './adal-auth-service';
 import MockAuthService from './mock-auth-service';
 import MsalAuthService from './msal-auth-service';
@@ -18,7 +18,7 @@ export default class AuthService implements IAuthService {
   }
 
   isCallback() {
-    return this.authService.isCallback(window.location.hash);
+    return this.authService.isCallback(this.window.location.hash);
   }
 
   login() {
@@ -38,7 +38,7 @@ export default class AuthService implements IAuthService {
   }
 
   private initAuthService() {
-    const url = new URL(window.location.href);
+    const url = new URL(this.window.location.href);
     const params = new URLSearchParams(url.search);
 
     if (params.get('mockData')) {
@@ -56,5 +56,9 @@ export default class AuthService implements IAuthService {
     } else {
       this.authService = new AdalAuthService();
     }
+  }
+
+  private get window() {
+    return window || global;
   }
 }

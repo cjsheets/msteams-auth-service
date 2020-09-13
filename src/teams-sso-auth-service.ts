@@ -1,5 +1,5 @@
-import * as microsoftTeams from '@microsoft/teams-js';
 import AuthenticationContext from 'adal-angular';
+import { MicrosoftTeams } from './utility';
 import { IAuthService, Resource } from './types';
 import TeamsAuthService from './teams-auth-service';
 
@@ -12,7 +12,7 @@ class TeamsSsoAuthService implements IAuthService {
   private authService: TeamsAuthService;
 
   constructor() {
-    microsoftTeams.initialize();
+    MicrosoftTeams.initialize();
 
     this.token = null;
   }
@@ -39,7 +39,7 @@ class TeamsSsoAuthService implements IAuthService {
     // parse JWT token to object
     const base64Url = token.split('.')[1];
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const parsedToken = JSON.parse(window.atob(base64));
+    const parsedToken = JSON.parse(TeamsSsoAuthService.window.atob(base64));
     const nameParts = parsedToken.name.split(' ');
     return {
       userName: parsedToken.name,
@@ -73,7 +73,7 @@ class TeamsSsoAuthService implements IAuthService {
       if (this.token) {
         resolve(this.token);
       } else {
-        microsoftTeams.authentication.getAuthToken({
+        MicrosoftTeams.authentication.getAuthToken({
           resources: [resource],
           successCallback: (result) => {
             this.token = result;
@@ -89,6 +89,10 @@ class TeamsSsoAuthService implements IAuthService {
 
   get config() {
     return this.authService.config;
+  }
+
+  private static get window() {
+    return window || global;
   }
 }
 

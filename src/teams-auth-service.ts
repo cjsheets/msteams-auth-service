@@ -1,5 +1,5 @@
-import * as microsoftTeams from '@microsoft/teams-js';
 import AuthenticationContext from 'adal-angular';
+import { MicrosoftTeams } from './utility';
 import { IAuthService, Resource } from './types';
 
 /*
@@ -13,9 +13,9 @@ class TeamsAuthService implements IAuthService {
   private loginPromise: Promise<AuthenticationContext.UserInfo>;
 
   constructor() {
-    microsoftTeams.initialize();
-    microsoftTeams.getContext(function getContext() {});
-    const url = new URL(window.location.href);
+    MicrosoftTeams.initialize();
+    MicrosoftTeams.getContext(function getContext() {});
+    const url = new URL(this.window.location.href);
     this.authParams = new URLSearchParams(url.search);
     this.authContext = new AuthenticationContext(this.config);
   }
@@ -25,8 +25,8 @@ class TeamsAuthService implements IAuthService {
       this.loginPromise = new Promise<AuthenticationContext.UserInfo>((resolve, reject) => {
         this.ensureLoginHint().then(() => {
           // Start the login flow
-          microsoftTeams.authentication.authenticate({
-            url: `${window.location.origin}/tab/silent-start`,
+          MicrosoftTeams.authentication.authenticate({
+            url: `${this.window.location.origin}/tab/silent-start`,
             width: 600,
             height: 535,
             successCallback: () => {
@@ -47,7 +47,7 @@ class TeamsAuthService implements IAuthService {
   }
 
   isCallback() {
-    return this.authContext.isCallback(window.location.hash);
+    return this.authContext.isCallback(this.window.location.hash);
   }
 
   getUser() {
@@ -78,7 +78,7 @@ class TeamsAuthService implements IAuthService {
 
   ensureLoginHint() {
     return new Promise((resolve) => {
-      microsoftTeams.getContext((context) => {
+      MicrosoftTeams.getContext((context) => {
         const scopes = encodeURIComponent(
           'email profile User.ReadBasic.All, User.Read.All, Group.Read.All, Directory.Read.All'
         );
@@ -106,10 +106,14 @@ class TeamsAuthService implements IAuthService {
       extraQueryParameter: '',
       instance: 'https://login.microsoftonline.com/',
       navigateToLoginRequestUrl: false,
-      postLogoutRedirectUri: `${window.location.origin}/${process.env.ADAL_REDIRECT_PATH}`,
-      redirectUri: `${window.location.origin}/${process.env.ADAL_REDIRECT_PATH}`,
+      postLogoutRedirectUri: `${this.window.location.origin}/${process.env.ADAL_REDIRECT_PATH}`,
+      redirectUri: `${this.window.location.origin}/${process.env.ADAL_REDIRECT_PATH}`,
       tenant: this.authParams.get('tenantId') || 'common',
     };
+  }
+
+  private get window() {
+    return window || global;
   }
 }
 

@@ -17,7 +17,7 @@ class MsalAuthService implements IAuthService {
       'https://graph.microsoft.com/User.Read',
     ];
 
-    return ((window.navigator as any).standalone
+    return ((this.window.navigator as any).standalone
       ? Promise.resolve(this.app.loginRedirect({ scopes }) as any)
       : this.app.loginPopup({ scopes })
     ).then(() => {
@@ -30,7 +30,7 @@ class MsalAuthService implements IAuthService {
   }
 
   isCallback() {
-    return this.app.isCallback(window.location.hash);
+    return this.app.isCallback(this.window.location.hash);
   }
 
   getUser() {
@@ -57,9 +57,13 @@ class MsalAuthService implements IAuthService {
     return {
       auth: {
         clientId: process.env.CLIENT_ID,
-        redirectUri: `${window.location.origin}/${process.env.ADAL_REDIRECT_PATH}`,
+        redirectUri: `${this.window.location.origin}/${process.env.ADAL_REDIRECT_PATH}`,
       },
     };
+  }
+
+  private get window() {
+    return window || global;
   }
 }
 

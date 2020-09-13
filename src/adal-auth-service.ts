@@ -1,5 +1,4 @@
 import AuthenticationContext from 'adal-angular';
-
 import { IAuthService, Resource } from './types';
 
 /*
@@ -17,7 +16,7 @@ class AdalAuthService implements IAuthService {
   private loginPromiseReject: (err: Error) => void;
 
   constructor() {
-    const url = new URL(window.location.href);
+    const url = new URL(this.window.location.href);
     this.authParams = new URLSearchParams(url.search);
     this.authContext = new AuthenticationContext(this.config);
   }
@@ -39,7 +38,7 @@ class AdalAuthService implements IAuthService {
   }
 
   isCallback() {
-    return this.authContext.isCallback(window.location.hash);
+    return this.authContext.isCallback(this.window.location.hash);
   }
 
   loginCallback = (reason: any, token: any, error: any) => {
@@ -100,11 +99,15 @@ class AdalAuthService implements IAuthService {
       extraQueryParameter: `prompt=consent&scope=${scopes}`,
       instance: 'https://login.microsoftonline.com/',
       navigateToLoginRequestUrl: false,
-      popUp: !(window.navigator as any).standalone,
-      postLogoutRedirectUri: `${window.location.origin}/${process.env.ADAL_REDIRECT_PATH}`,
-      redirectUri: `${window.location.origin}/${process.env.ADAL_REDIRECT_PATH}`,
+      popUp: !(this.window.navigator as any).standalone,
+      postLogoutRedirectUri: `${this.window.location.origin}/${process.env.ADAL_REDIRECT_PATH}`,
+      redirectUri: `${this.window.location.origin}/${process.env.ADAL_REDIRECT_PATH}`,
       tenant: this.authParams.get('tenantId') || 'common',
     };
+  }
+
+  private get window() {
+    return window || global;
   }
 }
 
