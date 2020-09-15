@@ -26,5 +26,6 @@ module.exports = {
     '@typescript-eslint/ban-ts-ignore': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     'prefer-promise-reject-errors': 'off',
+    'class-methods-use-this': 'off',
   },
 };
