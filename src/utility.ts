@@ -1,4 +1,4 @@
-import * as TeamsJs from '@microsoft/teams-js';
+import type * as TeamsJs from '@microsoft/teams-js';
 
 export function insideIframe() {
   try {
@@ -8,9 +8,10 @@ export function insideIframe() {
   }
 }
 
-let teams = {} as typeof TeamsJs;
+let teams = {};
 if (typeof window !== 'undefined') {
-  teams = TeamsJs;
+  // eslint-disable-next-line global-require
+  teams = require('@microsoft/teams-js');
 }
 
-export const MicrosoftTeams = teams;
+export const MicrosoftTeams = teams as typeof TeamsJs;
